@@ -13,7 +13,7 @@ This package provides load support for Parquet files under the
 
 ## Installation
 
-Use Pkg.add("ParquetFiles") in Julia to install ParquetFiles and its dependencies.
+Use ``Pkg.add("ParquetFiles")`` in Julia to install ParquetFiles and its dependencies.
 
 ## Usage
 
