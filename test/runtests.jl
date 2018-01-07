@@ -1,4 +1,5 @@
 using ParquetFiles
+using FileIO
 using NamedTuples
 import IterableTables
 using Base.Test
@@ -11,7 +12,7 @@ include(joinpath(parquet_pkg_dir, "test", "get_parcompat.jl"))
 
 test_filename = joinpath(parquet_pkg_dir, "test", "parquet-compatibility", "parquet-testdata", "impala", "1.1.1-NONE", "nation.impala.parquet")
 
-pqf = ParquetFiles.ParquetFile(test_filename)
+pqf = ParquetFiles.load( File{format"Parquet"}(test_filename))
 
 @test IteratorInterfaceExtensions.isiterable(pqf) == true
 @test TableTraits.isiterabletable(pqf) == true
