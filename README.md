@@ -8,7 +8,7 @@
 
 ## Overview
 
-This package provides load support for Parquet files under the
+This package provides load support for [Parquet](https://parquet.apache.org/) files under the
 [FileIO.jl](https://github.com/JuliaIO/FileIO.jl) package.
 
 ## Installation
