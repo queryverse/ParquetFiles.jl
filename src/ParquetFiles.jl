@@ -29,7 +29,7 @@ end
     names = fieldnames(T)
     x = quote
         v, next_state = next(itr.rc, state)
-        return T($([T.types[i]<:String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i=1:length(T.types)]...)), next_state
+        return T(tuple($([T.types[i]<:String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i=1:length(T.types)]...))), next_state
     end
     return x
 end
