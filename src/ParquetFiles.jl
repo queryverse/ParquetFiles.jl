@@ -1,8 +1,10 @@
 module ParquetFiles
 
-using Parquet, IteratorInterfaceExtensions, TableTraits, NamedTuples
-import FileIO
+using Parquet, IteratorInterfaceExtensions, TableTraits, NamedTuples,
+    FileIO
 import IterableTables
+
+export load
 
 struct ParquetFile
     filename::String
@@ -38,7 +40,7 @@ function Base.done(itr::ParquetNamedTupleIterator, state)
     return done(itr.rc, state)
 end
 
-function load(f::FileIO.File{FileIO.format"Parquet"})
+function fileio_load(f::FileIO.File{FileIO.format"Parquet"})
     return ParquetFile(f.filename)
 end
 
