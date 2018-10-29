@@ -1,8 +1,7 @@
 module ParquetFiles
 
-using Parquet, IteratorInterfaceExtensions, TableTraits, NamedTuples,
-    FileIO
-import IterableTables
+using Parquet, IteratorInterfaceExtensions, TableTraits, FileIO
+import IterableTables, DataValues
 
 export load
 
@@ -23,21 +22,18 @@ function Base.length(itr::ParquetNamedTupleIterator)
     return itr.nrows
 end
 
-function Base.start(itr::ParquetNamedTupleIterator)
-    return start(itr.rc)
-end
-
-@generated function Base.next(itr::ParquetNamedTupleIterator{T,T_row}, state) where {T,T_row}
+@generated function Base.iterate(itr::ParquetNamedTupleIterator{T,T_row}, state...) where {T,T_row}
     names = fieldnames(T)
-    x = quote
-        v, next_state = next(itr.rc, state)
-        return T($([T.types[i]<:String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i=1:length(T.types)]...)), next_state
+    quote
+        y = iterate(itr.rc, state...)
+        if y===nothing
+            return nothing
+        else
+            v = y[1]
+            next_state = y[2]
+            return T(($([fieldtype(T, i)<:String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i=1:length(names)]...),)), next_state
+        end
     end
-    return x
-end
-
-function Base.done(itr::ParquetNamedTupleIterator, state)
-    return done(itr.rc, state)
 end
 
 function fileio_load(f::FileIO.File{FileIO.format"Parquet"})
@@ -59,7 +55,7 @@ function IteratorInterfaceExtensions.getiterator(file::ParquetFile)
     col_names = fieldnames(T_row)
     col_types = [i<:Vector{UInt8} ? String : i for i in T_row.types]
 
-    T = eval(:(@NT($(col_names...)))){col_types...}
+    T = NamedTuple{(col_names...,), Tuple{col_types...}}
 
     rc = RecCursor(p, 1:nrows(p), colnames(p), JuliaBuilder(p, T_row))
 
