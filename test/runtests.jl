@@ -1,10 +1,12 @@
 using ParquetFiles
-using NamedTuples
-using Base.Test
+using Parquet
+using IteratorInterfaceExtensions
+using TableTraits
+using Test
 
 @testset "ParquetFiles" begin
 
-parquet_pkg_dir = Pkg.dir("Parquet")
+parquet_pkg_dir = joinpath(dirname(pathof(Parquet)), "..")
 
 include(joinpath(parquet_pkg_dir, "test", "get_parcompat.jl"))
 
@@ -20,6 +22,6 @@ it = IteratorInterfaceExtensions.getiterator(pqf)
 ar = collect(it)
 
 @test length(ar) == 25
-@test ar[1] == @NT(n_nationkey = 0, n_name = "ALGERIA", n_regionkey = 0, n_comment = " haggle. carefully final deposits detect slyly agai")
+@test ar[1] == (n_nationkey = 0, n_name = "ALGERIA", n_regionkey = 0, n_comment = " haggle. carefully final deposits detect slyly agai")
 
 end
