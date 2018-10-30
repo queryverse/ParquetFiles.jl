@@ -1,13 +1,27 @@
 module ParquetFiles
 
 using Parquet, IteratorInterfaceExtensions, TableTraits, FileIO
-import IterableTables, DataValues
+import IterableTables, DataValues, TableShowUtils
 
 export load
 
 struct ParquetFile
     filename::String
 end
+
+function Base.show(io::IO, source::ParquetFile)
+    TableShowUtils.printtable(io, getiterator(source), "Parquet file")
+end
+
+function Base.show(io::IO, ::MIME"text/html", source::ParquetFile)
+    TableShowUtils.printHTMLtable(io, getiterator(source))
+end
+Base.Multimedia.showable(::MIME"text/html", source::ParquetFile) = true
+
+function Base.show(io::IO, ::MIME"application/vnd.dataresource+json", source::ParquetFile)
+    TableShowUtils.printdataresource(io, getiterator(source))
+end
+Base.Multimedia.showable(::MIME"application/vnd.dataresource+json", source::ParquetFile) = true
 
 struct ParquetNamedTupleIterator{T,T_row}
     rc::RecCursor
