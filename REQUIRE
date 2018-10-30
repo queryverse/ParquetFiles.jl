@@ -1,5 +1,5 @@
 julia 0.7
-Parquet 0.1.0
+Parquet 0.2.0
 IteratorInterfaceExtensions 0.1.1
 TableTraits 0.4.0
 FileIO 1.0.0
