@@ -3,7 +3,7 @@ module ParquetFiles
 using Parquet, IteratorInterfaceExtensions, TableTraits, FileIO
 import IterableTables, DataValues, TableShowUtils
 
-export load
+export load, File, @format_str
 
 struct ParquetFile
     filename::String
