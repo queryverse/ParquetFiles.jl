@@ -3,7 +3,6 @@
 [![Project Status: Active - The project has reached a stable, usable state and is being actively developed.](http://www.repostatus.org/badges/latest/active.svg)](http://www.repostatus.org/#active)
 [![Build Status](https://travis-ci.org/queryverse/ParquetFiles.jl.svg?branch=master)](https://travis-ci.org/queryverse/ParquetFiles.jl)
 [![Build status](https://ci.appveyor.com/api/projects/status/984c6kxfhdhgj77m/branch/master?svg=true)](https://ci.appveyor.com/project/queryverse/parquetfiles-jl/branch/master)
-[![ParquetFiles](http://pkg.julialang.org/badges/ParquetFiles_0.6.svg)](http://pkg.julialang.org/?pkg=ParquetFiles)
 [![codecov.io](http://codecov.io/github/queryverse/ParquetFiles.jl/coverage.svg?branch=master)](http://codecov.io/github/queryverse/ParquetFiles.jl?branch=master)
 
 ## Overview
