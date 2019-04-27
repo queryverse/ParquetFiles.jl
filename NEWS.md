@@ -1,3 +1,7 @@
+# ParquetFiles.jl v1.0.0 Release Notes
+* Drop julia 0.7 support
+* Migrate to Project.toml
+
 # ParquetFiles.jl v0.2.0 Release Notes
 * Export FileIO.File and FileIO.@format_str
 
