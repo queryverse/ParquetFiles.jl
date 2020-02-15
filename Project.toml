@@ -1,6 +1,6 @@
 name = "ParquetFiles"
 uuid = "46a55296-af5a-53b0-aaa0-97023b66127f"
-version = "1.0.0-DEV"
+version = "0.2.1-DEV"
 
 [deps]
 DataValues = "e7dc6d0d-1eca-5fa6-8ad6-5aecde8b7ea5"
