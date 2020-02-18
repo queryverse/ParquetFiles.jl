@@ -29,7 +29,7 @@ struct ParquetNamedTupleIterator{T,T_row}
 end
 
 function Base.eltype(itr::ParquetNamedTupleIterator{T,T_row}) where {T,T_row}
-    return T        
+    return T
 end
 
 function Base.length(itr::ParquetNamedTupleIterator)
@@ -40,12 +40,12 @@ end
     names = fieldnames(T)
     quote
         y = iterate(itr.rc, state...)
-        if y===nothing
+        if y === nothing
             return nothing
         else
             v = y[1]
             next_state = y[2]
-            return T(($([fieldtype(T, i)<:String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i=1:length(names)]...),)), next_state
+            return T(($([fieldtype(T, i) <: String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i = 1:length(names)]...),)), next_state
         end
     end
 end
@@ -67,14 +67,14 @@ function IteratorInterfaceExtensions.getiterator(file::ParquetFile)
     T_row = eval(T_row_name)
 
     col_names = fieldnames(T_row)
-    col_types = [i<:Vector{UInt8} ? String : i for i in T_row.types]
+    col_types = [i <: Vector{UInt8} ? String : i for i in T_row.types]
 
-    T = NamedTuple{(col_names...,), Tuple{col_types...}}
+    T = NamedTuple{(col_names...,),Tuple{col_types...}}
 
     rc = RecCursor(p, 1:nrows(p), colnames(p), JuliaBuilder(p, T_row))
 
     it = ParquetNamedTupleIterator{T,T_row}(rc, nrows(p))
-    
+
     return it
 end
 
