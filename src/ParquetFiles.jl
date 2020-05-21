@@ -24,7 +24,7 @@ end
 Base.Multimedia.showable(::MIME"application/vnd.dataresource+json", source::ParquetFile) = true
 
 struct ParquetNamedTupleIterator{T,T_row}
-    rc::RecCursor
+    rc::RecordCursor
     nrows::Int
 end
 
@@ -71,7 +71,7 @@ function IteratorInterfaceExtensions.getiterator(file::ParquetFile)
 
     T = NamedTuple{(col_names...,),Tuple{col_types...}}
 
-    rc = RecCursor(p, 1:nrows(p), colnames(p), JuliaBuilder(p, T_row))
+    rc = RecordCursor(p, 1:nrows(p), colnames(p), JuliaBuilder(p, T_row))
 
     it = ParquetNamedTupleIterator{T,T_row}(rc, nrows(p))
 
