@@ -1,4 +1,7 @@
 # ParquetFiles.jl v1.0.0 Release Notes
+* Read Parquet files via Parquet2.jl instead of Parquet.jl
+* Require julia 1.10
+* Support the TableTraits column interface (`get_columns_copy_using_missing`)
 * Drop julia 0.7 support
 * Migrate to Project.toml
 

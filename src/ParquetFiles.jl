@@ -1,6 +1,6 @@
 module ParquetFiles
 
-using Parquet, IteratorInterfaceExtensions, TableTraits, FileIO
+using Parquet2, IteratorInterfaceExtensions, TableTraits, TableTraitsUtils, Tables, FileIO
 import IterableTables, DataValues, TableShowUtils
 
 export load, File, @format_str
@@ -16,39 +16,12 @@ end
 function Base.show(io::IO, ::MIME"text/html", source::ParquetFile)
     TableShowUtils.printHTMLtable(io, getiterator(source))
 end
-Base.Multimedia.showable(::MIME"text/html", source::ParquetFile) = true
+Base.showable(::MIME"text/html", source::ParquetFile) = true
 
 function Base.show(io::IO, ::MIME"application/vnd.dataresource+json", source::ParquetFile)
     TableShowUtils.printdataresource(io, getiterator(source))
 end
-Base.Multimedia.showable(::MIME"application/vnd.dataresource+json", source::ParquetFile) = true
-
-struct ParquetNamedTupleIterator{T,T_row}
-    rc::RecCursor
-    nrows::Int
-end
-
-function Base.eltype(itr::ParquetNamedTupleIterator{T,T_row}) where {T,T_row}
-    return T
-end
-
-function Base.length(itr::ParquetNamedTupleIterator)
-    return itr.nrows
-end
-
-@generated function Base.iterate(itr::ParquetNamedTupleIterator{T,T_row}, state...) where {T,T_row}
-    names = fieldnames(T)
-    quote
-        y = iterate(itr.rc, state...)
-        if y === nothing
-            return nothing
-        else
-            v = y[1]
-            next_state = y[2]
-            return T(($([fieldtype(T, i) <: String ? :(String(copy(v.$(names[i])))) : :(v.$(names[i])) for i = 1:length(names)]...),)), next_state
-        end
-    end
-end
+Base.showable(::MIME"application/vnd.dataresource+json", source::ParquetFile) = true
 
 function fileio_load(f::FileIO.File{FileIO.format"Parquet"})
     return ParquetFile(f.filename)
@@ -56,26 +29,49 @@ end
 
 IteratorInterfaceExtensions.isiterable(x::ParquetFile) = true
 TableTraits.isiterabletable(x::ParquetFile) = true
+TableTraits.supports_get_columns_copy_using_missing(x::ParquetFile) = true
+
+# Byte array columns that carry no UTF8 annotation (anything written before the logical
+# type existed) come back as `Vector{UInt8}` rather than `String`, so they are decoded here
+# the way this package has always presented them.
+_materialize(c, ::Type{T}) where {T} = convert(Vector{T}, c)
+
+_materialize(c, ::Type{T}) where {T<:AbstractVector{UInt8}} = String[String(copy(x)) for x in c]
+
+function _materialize(c, ::Type{Union{Missing,T}}) where {T<:AbstractVector{UInt8}}
+    return Union{Missing,String}[x === missing ? missing : String(copy(x)) for x in c]
+end
+
+# Reads the file eagerly into plain `Vector`s. Parquet2 memory maps by default and its
+# string and dictionary columns are views onto that buffer, so the columns are materialized
+# before the dataset is closed: otherwise the mapping outlives `ds` and keeps the file
+# locked on Windows.
+function _loaddata(file::ParquetFile)
+    ds = Parquet2.Dataset(file.filename; use_mmap=false)
+    try
+        cols = Tables.columns(ds)
+        names = Symbol[Symbol(n) for n in Tables.columnnames(cols)]
+        columns = Any[_materialize(c, eltype(c)) for c in (Tables.getcolumn(cols, n) for n in names)]
+        return columns, names
+    finally
+        close(ds)
+    end
+end
 
 function IteratorInterfaceExtensions.getiterator(file::ParquetFile)
-    p = ParFile(file.filename)
+    columns, names = _loaddata(file)
 
-    T_row_name = Symbol("RCType$(String(gensym())[3:end])")
+    return TableTraitsUtils.create_tableiterator(columns, names)
+end
 
-    schema(JuliaConverter(ParquetFiles), p, T_row_name)
+function TableTraits.get_columns_copy_using_missing(file::ParquetFile)
+    columns, names = _loaddata(file)
 
-    T_row = eval(T_row_name)
+    return NamedTuple{(names...,)}((columns...,))
+end
 
-    col_names = fieldnames(T_row)
-    col_types = [i <: Vector{UInt8} ? String : i for i in T_row.types]
-
-    T = NamedTuple{(col_names...,),Tuple{col_types...}}
-
-    rc = RecCursor(p, 1:nrows(p), colnames(p), JuliaBuilder(p, T_row))
-
-    it = ParquetNamedTupleIterator{T,T_row}(rc, nrows(p))
-
-    return it
+function Base.collect(x::ParquetFile)
+    return collect(getiterator(x))
 end
 
 end # module
