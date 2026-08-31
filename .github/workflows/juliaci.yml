@@ -12,6 +12,10 @@ jobs:
     with:
       include-all-compatible-minor-versions: true
       include-rc-versions: true
+      # Parquet2 does not precompile on 32-bit: INT64 backed columns get a buffer half the
+      # size they need (Parquet2 src/read.jl:368). Re-enable once that is fixed upstream.
+      include-windows-x86: false
+      include-linux-x86: false
     permissions: write-all
     secrets:
       codecov_token: ${{ secrets.CODECOV_TOKEN }}
